@@ -89,6 +89,8 @@ Start DMEO `npm start`
 You may define your own custom implementation of a CAPTCHA javascript.  
 The url to the script should then be provided in attribute `script_url`.  
 e.g. `script_url=assets/custom-captcha.js`  
+The javascript must be fully compliant to the Google ReCAPTCHA so,  
+the component can easily switch between them.
 
 Here is a full example
 
