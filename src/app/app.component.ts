@@ -8,7 +8,10 @@ import { NgxRecaptchaComponent } from 'projects/ngx-recaptcha/src/public-api';
 })
 export class AppComponent {
   title = 'ngx-recaptcha-app';
+
   captchaValue: string
+  script_url: string ='https://blog.angular.io'
+
   @ViewChild(NgxRecaptchaComponent, { static: false }) captcha: NgxRecaptchaComponent
 
   callback(type: string, event: any) {
@@ -17,6 +20,8 @@ export class AppComponent {
       this.captcha.execute()
     } else if (type === 'response') {
       this.captchaValue = event
+    } else if (type === 'error') {
+      this.captchaValue = JSON.stringify(event, null, 2)
     }
   }
 }
