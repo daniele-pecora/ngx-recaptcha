@@ -22,10 +22,22 @@
 
 
 <h3>RE-CAPTCHA</h3>
+<p><input type="text" size="60" [(value)]="script_url"></p>
 
-<ngx-recaptcha site_key="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" [style]="'image audio'" theme="light" tabindex="0"
-  size="invisible" language="de" global="true" (loaded)="callback('loaded',$event)"
-  (captchaExpired)="callback('expired',$event)" (captchaResponse)="callback('response',$event)">
+<ngx-recaptcha 
+  site_key="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" 
+  [style]="'image audio'" 
+  theme="light" 
+  tabindex="0"
+  size="invisible" 
+  language="de" 
+  global="true" 
+  (loaded)="callback('loaded',$event)"
+  (error)="callback('error',$event)"
+  (captchaExpired)="callback('expired',$event)" 
+  (captchaResponse)="callback('response',$event)"
+  [script_url]="script_url"
+  >
 </ngx-recaptcha>
 
 <h4>result:</h4>
