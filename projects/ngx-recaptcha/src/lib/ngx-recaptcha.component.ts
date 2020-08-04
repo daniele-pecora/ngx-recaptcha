@@ -37,7 +37,10 @@ export class NgxRecaptchaComponent implements OnInit, AfterViewInit, ControlValu
 
     @Output() captchaResponse = new EventEmitter<string>()
     @Output() captchaExpired = new EventEmitter()
+
+    @Input() script_url: string
     @Output() loaded = new EventEmitter<boolean>()
+    @Output() error = new EventEmitter<boolean>()
 
     @ViewChild('target', { static: false }) targetRef: ElementRef
     widgetId: any = null;
@@ -47,6 +50,10 @@ export class NgxRecaptchaComponent implements OnInit, AfterViewInit, ControlValu
 
 
     window
+
+    get window_chaptcha() {
+        return this._captchaService.window_chaptcha
+    }
 
     constructor(
         private _captchaService: NgxRecaptchaService,
@@ -66,12 +73,12 @@ export class NgxRecaptchaComponent implements OnInit, AfterViewInit, ControlValu
     }
 
     init() {
-        this._captchaService.getReady(this.language, this.global)
+        this._captchaService.getReady(this.language, this.global, this.script_url)
             .subscribe((ready) => {
                 if (!ready)
                     return;
                 // noinspection TypeScriptUnresolvedVariable,TypeScriptUnresolvedFunction
-                this.widgetId = (<any>window).grecaptcha.render(this.targetRef.nativeElement, {
+                this.widgetId = this.window_chaptcha.render(this.targetRef.nativeElement, {
                     'sitekey': this.site_key,
                     'badge': this.badge,
                     'theme': this.theme,
@@ -84,7 +91,14 @@ export class NgxRecaptchaComponent implements OnInit, AfterViewInit, ControlValu
                 setTimeout(() => {
                     this.loaded.emit(true)
                 }, 0);
-            });
+            },
+            (error) => {
+                setTimeout(() => {
+                    this.error.emit(error)
+                }, 0);
+            }),()=>{
+
+            };
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -92,7 +106,7 @@ export class NgxRecaptchaComponent implements OnInit, AfterViewInit, ControlValu
         if (this.widgetId === null)
             return;
         // noinspection TypeScriptUnresolvedVariable
-        this._zone.runOutsideAngular((<any>window).grecaptcha.reset.bind(this.widgetId))
+        this._zone.runOutsideAngular(this.window_chaptcha.reset.bind(this.widgetId))
         this.onChange(null)
     }
 
@@ -101,14 +115,14 @@ export class NgxRecaptchaComponent implements OnInit, AfterViewInit, ControlValu
         if (this.widgetId === null)
             return
         // noinspection TypeScriptUnresolvedVariable
-        (<any>window).grecaptcha.execute(this.widgetId)
+        this.window_chaptcha.execute(this.widgetId)
     }
 
     public getResponse(): string {
         if (this.widgetId === null)
             return null
         // noinspection TypeScriptUnresolvedVariable
-        return (<any>window).grecaptcha.getResponse(this.widgetId)
+        return this.window_chaptcha.getResponse(this.widgetId)
     }
 
     writeValue(newValue: any): void {
