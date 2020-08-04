@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { NgxRecaptchaModule } from '../../projects/ngx-recaptcha/src/lib/ngx-recaptcha.module';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -10,6 +11,7 @@ import { NgxRecaptchaModule } from '../../projects/ngx-recaptcha/src/lib/ngx-rec
   ],
   imports: [
     BrowserModule,
+    FormsModule,
     NgxRecaptchaModule
   ],
   providers: [],

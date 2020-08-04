@@ -20,9 +20,15 @@
 </ul>
  -->
 
+ <div>
+   <p><label><input [ngModel]="captchaType" (ngModelChange)="captchaTypeChange($event)" name="" type="radio" value="invisible"> RE-CAPTCHA invisible</label></p>
+   <p><label><input [ngModel]="captchaType" (ngModelChange)="captchaTypeChange($event)" name="" type="radio" value="visible"> RE-CAPTCHA visible</label></p>
+   <p><label><input [ngModel]="captchaType" (ngModelChange)="captchaTypeChange($event)" name="" type="radio" value="custom"> CAPTCHA custom</label></p>
+ </div>
 
-<h3>RE-CAPTCHA</h3>
-<p><input type="text" size="60" [(value)]="script_url"></p>
+<ng-container *ngIf="captchaType==='invisible'">
+<h3>RE-CAPTCHA invisible</h3>
+<p><input *ngIf="showURLInputs" type="text" size="60" [(value)]="script_url_invisible"></p>
 
 <ngx-recaptcha 
   site_key="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" 
@@ -36,9 +42,63 @@
   (error)="callback('error',$event)"
   (captchaExpired)="callback('expired',$event)" 
   (captchaResponse)="callback('response',$event)"
-  [script_url]="script_url"
+  [script_url]="script_url_invisible"
+  #captchaInvisible
+  name="Test"
   >
 </ngx-recaptcha>
 
 <h4>result:</h4>
-<pre class="showResult">{{captchaValue}}</pre>
+<pre class="showResult">{{captchaValueInvisible}}</pre>
+<button *ngIf="captchaValueInvisible" (click)="reset1($event)">Reset</button>
+</ng-container>
+
+<ng-container *ngIf="captchaType==='visible'">
+<h3>RE-CAPTCHA visible</h3>
+<p><input *ngIf="showURLInputs" type="text" size="60" [(value)]="script_url_visible"></p>
+<ngx-recaptcha 
+  site_key="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" 
+  [style]="'image audio'" 
+  theme="light" 
+  tabindex="0"
+  size="visible" 
+  language="de" 
+  global="true" 
+  (loaded)="callback2('loaded',$event)"
+  (error)="callback2('error',$event)"
+  (captchaExpired)="callback2('expired',$event)" 
+  (captchaResponse)="callback2('response',$event)"
+  [script_url]="script_url_visible"
+  #captchaVisible
+  >
+</ngx-recaptcha>
+
+<h4>result:</h4>
+<pre class="showResult">{{captchaValueVisible}}</pre>
+<button *ngIf="captchaValueVisible" (click)="reset2($event)">Reset</button>
+</ng-container>
+
+<ng-container *ngIf="captchaType==='custom'">
+<h3>CAPTCHA custom</h3>
+<p><input *ngIf="showURLInputs" type="text" size="60" [(value)]="script_url_custom"></p>
+<ngx-recaptcha 
+  site_key="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" 
+  [style]="'image audio'" 
+  theme="light" 
+  tabindex="0"
+  size="visible" 
+  language="de" 
+  global="true" 
+  (loaded)="callback3('loaded',$event)"
+  (error)="callback3('error',$event)"
+  (captchaExpired)="callback3('expired',$event)" 
+  (captchaResponse)="callback3('response',$event)"
+  [script_url]="script_url_custom"
+  #captchaCustom
+  >
+</ngx-recaptcha>
+
+<h4>result:</h4>
+<pre class="showResult">{{captchaValueCustom}}</pre>
+<button *ngIf="captchaValueCustom" (click)="reset3($event)">Reset</button>
+</ng-container>
