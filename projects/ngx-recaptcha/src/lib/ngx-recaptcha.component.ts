@@ -5,15 +5,17 @@ import {
     Output,
     EventEmitter,
     NgZone,
-    ViewChild, ElementRef, forwardRef, Renderer2, Inject, AfterViewInit
+    ViewChild, ElementRef, forwardRef, Renderer2, Inject, AfterViewInit, OnChanges, SimpleChanges
 } from '@angular/core'
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms'
-import { NgxRecaptchaService } from './ngx-recaptcha.service'
-import { DOCUMENT } from '@angular/common'
+import { NgxRecaptchaService, WidgetCaptchaInfo } from './ngx-recaptcha.service'
 
 @Component({
     selector: 'ngx-recaptcha',
-    template: '<div #target></div>',
+    template: `
+    <!-- required to be an HTML element (no ng-container) -->
+    <div #target></div>
+    `,
     providers: [
         {
             provide: NG_VALUE_ACCESSOR,
@@ -22,7 +24,7 @@ import { DOCUMENT } from '@angular/common'
         }
     ]
 })
-export class NgxRecaptchaComponent implements OnInit, AfterViewInit, ControlValueAccessor {
+export class NgxRecaptchaComponent implements OnInit, AfterViewInit, ControlValueAccessor, OnChanges {
 
     @Input() site_key: string = null;
     @Input() theme = 'light'
@@ -41,27 +43,48 @@ export class NgxRecaptchaComponent implements OnInit, AfterViewInit, ControlValu
     @Input() script_url: string
     @Output() loaded = new EventEmitter<boolean>()
     @Output() error = new EventEmitter<boolean>()
+    /**
+     * Unique name for the captcha element.<br/>
+     * Will be used to map all callbacks to the corresponding captcha object.<br/>
+     * If not set a random name will be created.
+     */
+    @Input() name: string = null
 
     @ViewChild('target', { static: false }) targetRef: ElementRef
-    widgetId: any = null;
+    /**
+     * will be set when the captcha is rendered
+     */
+    captchaWidgetId: any = null
+    /**
+     * Unique name for the captcha element.<br/>
+     * Will be used to map all callbacks to the corresponding captcha object.<br/>
+     * If not set a random name will be created.
+     */
+    captchaWidgetName: string = this.name
 
     onChange: Function = () => { }
     onTouched: Function = () => { }
 
-
-    window
-
-    get window_chaptcha() {
-        return this._captchaService.window_chaptcha
+    get window_captcha() {
+        return this._captchaService.window_captcha
     }
+
+    wInfo: WidgetCaptchaInfo
 
     constructor(
         private _captchaService: NgxRecaptchaService,
-        private renderer: Renderer2,
-        @Inject(DOCUMENT) private document,
-        private _zone: NgZone
-    ) {
-        this.window = this.document.defaultView
+        private _zone: NgZone) {
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.name) {
+            if (changes.name.currentValue !== changes.name.previousValue) {
+                if (!changes.name.currentValue) {
+                    this.captchaWidgetName = NgxRecaptchaService.getNameIfMissing(changes.name.currentValue)
+                }
+                this.captchaWidgetName = changes.name.currentValue
+            }
+        }
     }
 
     ngOnInit() {
@@ -72,57 +95,77 @@ export class NgxRecaptchaComponent implements OnInit, AfterViewInit, ControlValu
         this.init();
     }
 
-    init() {
-        this._captchaService.getReady(this.language, this.global, this.script_url)
-            .subscribe((ready) => {
-                if (!ready)
+    public init() {
+        this.captchaWidgetName = NgxRecaptchaService.getNameIfMissing(this.captchaWidgetName)
+
+        const options = {
+            'sitekey': this.site_key,
+            'badge': this.badge,
+            'theme': this.theme,
+            'type': this.type,
+            'size': this.size,
+            'tabindex': this.tabindex,
+            'callback': <any>((response: any) => this._zone.run(this.recaptchaCallback.bind(this, response))),
+            'expired-callback': <any>(() => this._zone.run(this.recaptchaExpiredCallback.bind(this)))
+        }
+
+        this._captchaService.getReady(this.captchaWidgetName, this.language, this.global, this.script_url)
+            .subscribe(({ success, widgetName, wInfo }) => {
+                if (widgetName !== this.captchaWidgetName)
+                    return
+                this.wInfo = wInfo
+                if (!success)
                     return;
-                // noinspection TypeScriptUnresolvedVariable,TypeScriptUnresolvedFunction
-                this.widgetId = this.window_chaptcha.render(this.targetRef.nativeElement, {
-                    'sitekey': this.site_key,
-                    'badge': this.badge,
-                    'theme': this.theme,
-                    'type': this.type,
-                    'size': this.size,
-                    'tabindex': this.tabindex,
-                    'callback': <any>((response: any) => this._zone.run(this.recaptchaCallback.bind(this, response))),
-                    'expired-callback': <any>(() => this._zone.run(this.recaptchaExpiredCallback.bind(this)))
-                });
+                try {
+                    // noinspection TypeScriptUnresolvedVariable,TypeScriptUnresolvedFunction
+                    this.captchaWidgetId = this.window_captcha.render(this.targetRef.nativeElement, options)
+                } catch (e) {
+                    console.error('Captcha:', `${this.captchaWidgetName}/${this.captchaWidgetId}`, e)
+                }
                 setTimeout(() => {
                     this.loaded.emit(true)
                 }, 0);
             },
-            (error) => {
-                setTimeout(() => {
-                    this.error.emit(error)
-                }, 0);
-            }),()=>{
+                (error) => {
+                    setTimeout(() => {
+                        this.error.emit(error)
+                    }, 0);
+                }), () => {
 
-            };
+                }
     }
 
     // noinspection JSUnusedGlobalSymbols
     public reset() {
-        if (this.widgetId === null)
+        if (this.captchaWidgetId === null)
             return;
         // noinspection TypeScriptUnresolvedVariable
-        this._zone.runOutsideAngular(this.window_chaptcha.reset.bind(this.widgetId))
+        this._zone.runOutsideAngular(this.window_captcha.reset.bind(this, this.captchaWidgetId))
         this.onChange(null)
     }
 
     // noinspection JSUnusedGlobalSymbols
     public execute() {
-        if (this.widgetId === null)
+        if (this.captchaWidgetId === null)
             return
         // noinspection TypeScriptUnresolvedVariable
-        this.window_chaptcha.execute(this.widgetId)
+        this.window_captcha.execute(this.captchaWidgetId)
     }
 
     public getResponse(): string {
-        if (this.widgetId === null)
+        if (this.captchaWidgetId === null)
             return null
         // noinspection TypeScriptUnresolvedVariable
-        return this.window_chaptcha.getResponse(this.widgetId)
+        return this.window_captcha.getResponse(this.captchaWidgetId)
+    }
+    
+    // noinspection JSUnusedGlobalSymbols
+    public clear() {
+        if (this.captchaWidgetId === null)
+            return
+        this.reset()
+        // noinspection TypeScriptUnresolvedVariable
+        this._captchaService.clear(this.wInfo)
     }
 
     writeValue(newValue: any): void {
