@@ -39,14 +39,19 @@ Required attributes
  - **type**
  - **size**
  - **tabindex**
- - **global** If true, the reCaptcha script will be loaded from www.recaptcha.net instead of www.google.com
-
+ - **global** If true, the reCaptcha script will be loaded from www.recaptcha.net instead of www.google.com   
+ - **script_url**  the Google reCaptcha javascript or any other javascript that renders a CAPTCHA. 
+                   Default is `https://(www.recaptcha.net|www.google.com)/recaptcha/api.js?hl=(language)&render=explicit& onload=reCaptchaOnloadCallback`.
+                   If another javascript is provided that Google's ReCAPTCHA then make sure it is fully compliant.
+ 
 
 ## EventHandler
 
 - **(loaded)**   
     This callback invokes `grecaptcher.init()` to initialize the re-captcha.   
     This also should call `grecaptcher.execute()` when using `size=invisible`.   
+- **(error)**   
+    This callback will receive any error loading the re-captcha script.   
 - **(captchaResponse)**  
     Will provide the CAPTCHA token  
 - **(captchaExpired)**  
