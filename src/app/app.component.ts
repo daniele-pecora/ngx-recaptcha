@@ -18,9 +18,9 @@ export class AppComponent {
   script_url_visible: string = ''//'https://blog.angular.io'
   script_url_custom: string = 'assets/custom-captcha.js'
 
-  @ViewChild('captchaInvisible', { static: false }) captchaInvisible: NgxRecaptchaComponent
-  @ViewChild('captchaVisible', { static: false }) captchaVisible: NgxRecaptchaComponent
-  @ViewChild('captchaCustom', { static: false }) captchaCustom: NgxRecaptchaComponent
+  @ViewChild('captchaInvisible') captchaInvisible: NgxRecaptchaComponent
+  @ViewChild('captchaVisible') captchaVisible: NgxRecaptchaComponent
+  @ViewChild('captchaCustom') captchaCustom: NgxRecaptchaComponent
 
 
   showURLInputs = false
