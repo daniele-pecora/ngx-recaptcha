@@ -1,8 +1,8 @@
 {
   "name": "ngx-recaptcha-easy",
-  "version": "0.0.3",
+  "version": "9.0.0",
   "peerDependencies": {
-    "@angular/common": "8.0.0",
-    "@angular/core": "8.0.0"
+    "@angular/common": "9.1.12",
+    "@angular/core": "9.1.12"
   }
 }
