@@ -2,7 +2,13 @@
 
 Simple library project to make RE-CAPTCHA usable on Angluar.
 
-Supporting also **visible** and **inivisble** reCAPTCHA
+Supporting also **visible**, **inivisble** reCAPTCHA and custom CAPTCHA.
+
+
+Version 0.0.x is compliant with Angular >=8
+
+Version 9.0.x is compliant with Angular >=9
+
 
 ### Import module
 

@@ -50,7 +50,7 @@ export class NgxRecaptchaComponent implements OnInit, AfterViewInit, ControlValu
      */
     @Input() name: string = null
 
-    @ViewChild('target', { static: false }) targetRef: ElementRef
+    @ViewChild('target') targetRef: ElementRef
     /**
      * will be set when the captcha is rendered
      */
