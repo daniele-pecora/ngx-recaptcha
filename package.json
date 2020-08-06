@@ -9,11 +9,12 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "build:lib": "ng build ngx-recaptcha",
+    "build:lib-prod": "ng build --prod ngx-recaptcha",
     "pack:lib": "npm pack dist/ngx-recaptcha/",
     "pre-publish:lib": "cp -f README.MD dist/ngx-recaptcha/README.MD",
     "publish:lib": "npm run pre-publish:lib && npm publish dist/ngx-recaptcha/",
-    "deploy:lib": "npm run build:lib && npm run pack:lib && npm run publish:lib",
-    "start:lib": "npm run build:lib && npm start"
+    "deploy:lib": "npm run build:lib-prod && npm run pack:lib && npm run publish:lib",
+    "start:lib": "npm run build:lib-prod && npm start"
   },
   "private": true,
   "dependencies": {
